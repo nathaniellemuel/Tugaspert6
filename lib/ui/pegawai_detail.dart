@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../model/pegawai.dart';
+import 'pegawai_update_form.dart';
 
 class PegawaiDetail extends StatefulWidget {
   final Pegawai pegawai;
@@ -20,50 +21,42 @@ class _PegawaiDetailState extends State<PegawaiDetail> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(
-              "NIP : ${widget.pegawai.nip}",
-              style: const TextStyle(fontSize: 20),
-            ),
+            Text("NIP : ${widget.pegawai.nip}", style: const TextStyle(fontSize: 20)),
             const SizedBox(height: 20),
-            Text(
-              "Nama : ${widget.pegawai.nama}",
-              style: const TextStyle(fontSize: 20),
-            ),
+            Text("Nama : ${widget.pegawai.nama}", style: const TextStyle(fontSize: 20)),
             const SizedBox(height: 20),
-            Text(
-              "Tanggal Lahir : ${widget.pegawai.tanggalLahir}",
-              style: const TextStyle(fontSize: 20),
-            ),
+            Text("Tanggal Lahir : ${widget.pegawai.tanggalLahir}", style: const TextStyle(fontSize: 20)),
             const SizedBox(height: 20),
-            Text(
-              "Nomor Telepon : ${widget.pegawai.nomorTelepon}",
-              style: const TextStyle(fontSize: 20),
-            ),
+            Text("Nomor Telepon : ${widget.pegawai.nomorTelepon}", style: const TextStyle(fontSize: 20)),
             const SizedBox(height: 20),
-            Text(
-              "Email : ${widget.pegawai.email}",
-              style: const TextStyle(fontSize: 20),
-            ),
+            Text("Email : ${widget.pegawai.email}", style: const TextStyle(fontSize: 20)),
+            const SizedBox(height: 20),
+            Text("Password : ••••••••", style: const TextStyle(fontSize: 20)),
             const SizedBox(height: 20),
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-              children: [
-                ElevatedButton(
-                  onPressed: () {},
-                  style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.green),
-                  child: const Text("Ubah"),
-                ),
-                ElevatedButton(
-                  onPressed: () {},
-                  style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
-                  child: const Text("Hapus"),
-                ),
-              ],
-            )
+              children: [_tombolUbah(), _tombolHapus()],
+            ),
           ],
         ),
       ),
     );
   }
+
+  _tombolUbah() => ElevatedButton(
+        onPressed: () {
+          Navigator.push(
+            context,
+            MaterialPageRoute(builder: (c) => PegawaiUpdateForm(pegawai: widget.pegawai)),
+          );
+        },
+        style: ElevatedButton.styleFrom(backgroundColor: Colors.green),
+        child: const Text("Ubah"),
+      );
+
+  _tombolHapus() => ElevatedButton(
+        onPressed: () {},
+        style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
+        child: const Text("Hapus"),
+      );
 }

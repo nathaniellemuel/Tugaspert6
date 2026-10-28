@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../model/pasien.dart';
+import 'pasien_update_form.dart';
 
 class PasienDetail extends StatefulWidget {
   final Pasien pasien;
@@ -20,50 +21,40 @@ class _PasienDetailState extends State<PasienDetail> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(
-              "No. RM : ${widget.pasien.nomorRm}",
-              style: const TextStyle(fontSize: 20),
-            ),
+            Text("No. RM : ${widget.pasien.nomorRm}", style: const TextStyle(fontSize: 20)),
             const SizedBox(height: 20),
-            Text(
-              "Nama : ${widget.pasien.nama}",
-              style: const TextStyle(fontSize: 20),
-            ),
+            Text("Nama : ${widget.pasien.nama}", style: const TextStyle(fontSize: 20)),
             const SizedBox(height: 20),
-            Text(
-              "Tanggal Lahir : ${widget.pasien.tanggalLahir}",
-              style: const TextStyle(fontSize: 20),
-            ),
+            Text("Tanggal Lahir : ${widget.pasien.tanggalLahir}", style: const TextStyle(fontSize: 20)),
             const SizedBox(height: 20),
-            Text(
-              "Nomor Telepon : ${widget.pasien.nomorTelepon}",
-              style: const TextStyle(fontSize: 20),
-            ),
+            Text("Nomor Telepon : ${widget.pasien.nomorTelepon}", style: const TextStyle(fontSize: 20)),
             const SizedBox(height: 20),
-            Text(
-              "Alamat : ${widget.pasien.alamat}",
-              style: const TextStyle(fontSize: 20),
-            ),
+            Text("Alamat : ${widget.pasien.alamat}", style: const TextStyle(fontSize: 20)),
             const SizedBox(height: 20),
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-              children: [
-                ElevatedButton(
-                  onPressed: () {},
-                  style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.green),
-                  child: const Text("Ubah"),
-                ),
-                ElevatedButton(
-                  onPressed: () {},
-                  style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
-                  child: const Text("Hapus"),
-                ),
-              ],
-            )
+              children: [_tombolUbah(), _tombolHapus()],
+            ),
           ],
         ),
       ),
     );
   }
+
+  _tombolUbah() => ElevatedButton(
+        onPressed: () {
+          Navigator.push(
+            context,
+            MaterialPageRoute(builder: (c) => PasienUpdateForm(pasien: widget.pasien)),
+          );
+        },
+        style: ElevatedButton.styleFrom(backgroundColor: Colors.green),
+        child: const Text("Ubah"),
+      );
+
+  _tombolHapus() => ElevatedButton(
+        onPressed: () {},
+        style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
+        child: const Text("Hapus"),
+      );
 }
