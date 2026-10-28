@@ -1,17 +1,9 @@
-# proyek_klinik
+## Setup after cloning
 
-A new Flutter project.
+1. **Install Flutter SDK** – download from https://flutter.dev and add `<flutter‑install‑dir>/bin` to your system PATH.
+2. **Run `flutter doctor`** – ensure Android SDK, Xcode (macOS), and connected devices are set up. Fix any issues reported.
+3. **Open project in VS Code / Android Studio** – install Flutter & Dart extensions for IDE support.
+4. **Fetch dependencies** – run `flutter pub get` in the project root.
+5. **Run the app** – `flutter run` (choose an emulator/device). The home screen lists Data Poli, Data Pegawai, and Data Pasien.
 
-## Getting Started
-
-This project is a starting point for a Flutter application.
-
-A few resources to get you started if this is your first Flutter project:
-
-- [Learn Flutter](https://docs.flutter.dev/get-started/learn-flutter)
-- [Write your first Flutter app](https://docs.flutter.dev/get-started/codelab)
-- [Flutter learning resources](https://docs.flutter.dev/reference/learning-resources)
-
-For help getting started with Flutter development, view the
-[online documentation](https://docs.flutter.dev/), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
+These steps guarantee required tools, dependencies, and a device are ready before building.
