@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../model/pasien.dart';
+import '../service/db_service.dart';
 import 'pasien_detail.dart';
 
 class PasienUpdateForm extends StatefulWidget {
@@ -63,20 +64,26 @@ class _PasienUpdateFormState extends State<PasienUpdateForm> {
   _fieldAlamat() => TextField(decoration: const InputDecoration(labelText: "Alamat"), controller: _alamatCtrl);
 
   _tombolSimpan() => ElevatedButton(
-        onPressed: () {
-          Pasien pasien = Pasien(
-            id: widget.pasien.id ?? 0,
-            nomorRm: _rmCtrl.text,
-            nama: _namaCtrl.text,
-            tanggalLahir: _tglCtrl.text,
-            nomorTelepon: _telCtrl.text,
-            alamat: _alamatCtrl.text,
+        onPressed: () async {
+          final pasien = Pasien(
+            id: widget.pasien.id,
+            nomorRm: _rmCtrl.text.trim(),
+            nama: _namaCtrl.text.trim(),
+            tanggalLahir: _tglCtrl.text.trim(),
+            nomorTelepon: _telCtrl.text.trim(),
+            alamat: _alamatCtrl.text.trim(),
           );
-          Navigator.pop(context);
-          Navigator.pushReplacement(
-            context,
-            MaterialPageRoute(builder: (c) => PasienDetail(pasien: pasien)),
-          );
+          if (pasien.id == null) return;
+          try {
+            await DbService().updatePasien(pasien);
+            if (!mounted) return;
+            Navigator.pop(context, true);
+          } catch (e) {
+            if (!mounted) return;
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(content: Text("Gagal update: $e")),
+            );
+          }
         },
         child: const Text("Simpan Perubahan"),
       );

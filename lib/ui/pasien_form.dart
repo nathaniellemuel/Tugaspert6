@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../model/pasien.dart';
+import '../service/db_service.dart';
 import 'pasien_detail.dart';
 
 class PasienForm extends StatefulWidget {
@@ -16,6 +17,17 @@ class _PasienFormState extends State<PasienForm> {
   final _tglCtrl = TextEditingController();
   final _telCtrl = TextEditingController();
   final _alamatCtrl = TextEditingController();
+  bool _saving = false;
+
+  @override
+  void dispose() {
+    _rmCtrl.dispose();
+    _namaCtrl.dispose();
+    _tglCtrl.dispose();
+    _telCtrl.dispose();
+    _alamatCtrl.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -51,20 +63,50 @@ class _PasienFormState extends State<PasienForm> {
   _fieldAlamat() => TextField(decoration: const InputDecoration(labelText: "Alamat"), controller: _alamatCtrl);
 
   _tombolSimpan() => ElevatedButton(
-        onPressed: () {
-          Pasien pasien = Pasien(
-            id: 0,
-            nomorRm: _rmCtrl.text,
-            nama: _namaCtrl.text,
-            tanggalLahir: _tglCtrl.text,
-            nomorTelepon: _telCtrl.text,
-            alamat: _alamatCtrl.text,
-          );
-          Navigator.pushReplacement(
-            context,
-            MaterialPageRoute(builder: (c) => PasienDetail(pasien: pasien)),
-          );
-        },
-        child: const Text("Simpan"),
+        onPressed: _saving
+            ? null
+            : () async {
+                if (_rmCtrl.text.trim().isEmpty ||
+                    _namaCtrl.text.trim().isEmpty) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(content: Text("Nomor RM dan Nama wajib diisi")),
+                  );
+                  return;
+                }
+                setState(() => _saving = true);
+                try {
+                  final pasien = Pasien(
+                    nomorRm: _rmCtrl.text.trim(),
+                    nama: _namaCtrl.text.trim(),
+                    tanggalLahir: _tglCtrl.text.trim(),
+                    nomorTelepon: _telCtrl.text.trim(),
+                    alamat: _alamatCtrl.text.trim(),
+                  );
+                  final id = await DbService().insertPasien(pasien);
+                  if (!mounted) return;
+                  Navigator.pop(context, true);
+                  Navigator.pushReplacement(
+                    context,
+                    MaterialPageRoute(
+                        builder: (c) => PasienDetail(
+                              pasien: Pasien(
+                                id: id,
+                                nomorRm: pasien.nomorRm,
+                                nama: pasien.nama,
+                                tanggalLahir: pasien.tanggalLahir,
+                                nomorTelepon: pasien.nomorTelepon,
+                                alamat: pasien.alamat,
+                              ),
+                            )),
+                  );
+                } catch (e) {
+                  if (!mounted) return;
+                  setState(() => _saving = false);
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(content: Text("Gagal simpan: $e")),
+                  );
+                }
+              },
+        child: Text(_saving ? "Menyimpan..." : "Simpan"),
       );
 }

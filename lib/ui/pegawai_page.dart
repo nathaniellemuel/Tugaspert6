@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../model/pegawai.dart';
+import '../service/db_service.dart';
 import 'pegawai_item.dart';
 import 'pegawai_form.dart';
 
@@ -11,6 +12,23 @@ class PegawaiPage extends StatefulWidget {
 }
 
 class _PegawaiPageState extends State<PegawaiPage> {
+  late Future<List<Pegawai>> _future;
+
+  @override
+  void initState() {
+    super.initState();
+    _load();
+  }
+
+  void _load() {
+    _future = DbService().getPegawaiList();
+  }
+
+  Future<void> _refresh() async {
+    setState(_load);
+    await _future;
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -19,48 +37,54 @@ class _PegawaiPageState extends State<PegawaiPage> {
         actions: [
           IconButton(
             icon: const Icon(Icons.add),
-            onPressed: () {
-              Navigator.push(
+            onPressed: () async {
+              final changed = await Navigator.push(
                 context,
                 MaterialPageRoute(builder: (context) => const PegawaiForm()),
               );
+              if (changed == true && mounted) _refresh();
             },
           )
         ],
       ),
-      body: ListView(
-        children: [
-          PegawaiItem(
-            pegawai: Pegawai(
-              nip: "197001011990031001",
-              nama: "Budi Santoso",
-              tanggalLahir: "1970-01-01",
-              nomorTelepon: "081234567890",
-              email: "budi@klinik.com",
-              password: "budi123",
+      body: FutureBuilder<List<Pegawai>>(
+        future: _future,
+        builder: (context, snapshot) {
+          if (snapshot.connectionState == ConnectionState.waiting) {
+            return const Center(child: CircularProgressIndicator());
+          }
+          if (snapshot.hasError) {
+            return Center(
+              child: Padding(
+                padding: const EdgeInsets.all(16),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    const Text("Gagal konek ke MySQL.\nPastikan container klinik-mysql jalan."),
+                    const SizedBox(height: 8),
+                    Text("${snapshot.error}",
+                        style: const TextStyle(fontSize: 12)),
+                    const SizedBox(height: 8),
+                    ElevatedButton(
+                      onPressed: _refresh,
+                      child: const Text("Coba lagi"),
+                    ),
+                  ],
+                ),
+              ),
+            );
+          }
+          final list = snapshot.data ?? [];
+          if (list.isEmpty) {
+            return const Center(child: Text("Belum ada data pegawai"));
+          }
+          return RefreshIndicator(
+            onRefresh: _refresh,
+            child: ListView(
+              children: [for (final p in list) PegawaiItem(pegawai: p)],
             ),
-          ),
-          PegawaiItem(
-            pegawai: Pegawai(
-              nip: "198505122010012002",
-              nama: "Siti Aminah",
-              tanggalLahir: "1985-05-12",
-              nomorTelepon: "081298765432",
-              email: "siti@klinik.com",
-              password: "siti123",
-            ),
-          ),
-          PegawaiItem(
-            pegawai: Pegawai(
-              nip: "199011232015031003",
-              nama: "Andi Pratama",
-              tanggalLahir: "1990-11-23",
-              nomorTelepon: "081211223344",
-              email: "andi@klinik.com",
-              password: "andi123",
-            ),
-          ),
-        ],
+          );
+        },
       ),
     );
   }

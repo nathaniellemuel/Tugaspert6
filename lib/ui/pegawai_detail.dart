@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../model/pegawai.dart';
+import '../service/db_service.dart';
 import 'pegawai_update_form.dart';
 
 class PegawaiDetail extends StatefulWidget {
@@ -44,18 +45,52 @@ class _PegawaiDetailState extends State<PegawaiDetail> {
   }
 
   _tombolUbah() => ElevatedButton(
-        onPressed: () {
-          Navigator.push(
+        onPressed: () async {
+          final changed = await Navigator.push(
             context,
-            MaterialPageRoute(builder: (c) => PegawaiUpdateForm(pegawai: widget.pegawai)),
+            MaterialPageRoute(
+                builder: (c) =>
+                    PegawaiUpdateForm(pegawai: widget.pegawai)),
           );
+          if (changed == true && mounted) Navigator.pop(context, true);
         },
         style: ElevatedButton.styleFrom(backgroundColor: Colors.green),
         child: const Text("Ubah"),
       );
 
   _tombolHapus() => ElevatedButton(
-        onPressed: () {},
+        onPressed: () async {
+          final ok = await showDialog<bool>(
+            context: context,
+            builder: (c) => AlertDialog(
+              title: const Text("Hapus Pegawai?"),
+              content: Text("Hapus ${widget.pegawai.nama}?"),
+              actions: [
+                TextButton(
+                    onPressed: () => Navigator.pop(c, false),
+                    child: const Text("Batal")),
+                TextButton(
+                    onPressed: () => Navigator.pop(c, true),
+                    child: const Text("Hapus")),
+              ],
+            ),
+          );
+          if (ok != true || !mounted) return;
+          if (widget.pegawai.id == null) {
+            Navigator.pop(context, true);
+            return;
+          }
+          try {
+            await DbService().deletePegawai(widget.pegawai.id!);
+            if (!mounted) return;
+            Navigator.pop(context, true);
+          } catch (e) {
+            if (!mounted) return;
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(content: Text("Gagal hapus: $e")),
+            );
+          }
+        },
         style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
         child: const Text("Hapus"),
       );

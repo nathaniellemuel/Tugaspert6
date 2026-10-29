@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import '../model/poli.dart';
-import 'poli_detail.dart';
+import '../service/db_service.dart';
 
 class PoliUpdateForm extends StatefulWidget {
   final Poli poli;
@@ -14,11 +14,18 @@ class PoliUpdateForm extends StatefulWidget {
 class _PoliUpdateFormState extends State<PoliUpdateForm> {
   final _formKey = GlobalKey<FormState>();
   final _namaPoliCtrl = TextEditingController();
+  bool _saving = false;
 
   @override
   void initState() {
     super.initState();
     _namaPoliCtrl.text = widget.poli.namaPoli;
+  }
+
+  @override
+  void dispose() {
+    _namaPoliCtrl.dispose();
+    super.dispose();
   }
 
   @override
@@ -45,13 +52,24 @@ class _PoliUpdateFormState extends State<PoliUpdateForm> {
 
   _tombolSimpan() {
     return ElevatedButton(
-        onPressed: () {
-          Poli poli = Poli(namaPoli: _namaPoliCtrl.text);
-          Navigator.pop(context);
-          Navigator.pushReplacement(
-              context,
-              MaterialPageRoute(builder: (context) => PoliDetail(poli: poli)));
-        },
-        child: const Text("Simpan Perubahan"));
+        onPressed: _saving
+            ? null
+            : () async {
+                final nama = _namaPoliCtrl.text.trim();
+                if (nama.isEmpty || widget.poli.id == null) return;
+                setState(() => _saving = true);
+                try {
+                  await DbService().updatePoli(widget.poli.id!, nama);
+                  if (!mounted) return;
+                  Navigator.pop(context, true);
+                } catch (e) {
+                  if (!mounted) return;
+                  setState(() => _saving = false);
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(content: Text("Gagal update: $e")),
+                  );
+                }
+              },
+        child: Text(_saving ? "Menyimpan..." : "Simpan Perubahan"));
   }
 }

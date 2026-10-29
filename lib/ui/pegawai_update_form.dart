@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../model/pegawai.dart';
+import '../service/db_service.dart';
 import 'pegawai_detail.dart';
 
 class PegawaiUpdateForm extends StatefulWidget {
@@ -68,21 +69,27 @@ class _PegawaiUpdateFormState extends State<PegawaiUpdateForm> {
   _fieldPassword() => TextField(decoration: const InputDecoration(labelText: "Password"), obscureText: true, controller: _pwdCtrl);
 
   _tombolSimpan() => ElevatedButton(
-        onPressed: () {
-          Pegawai pegawai = Pegawai(
-            id: widget.pegawai.id ?? 0,
-            nip: _nipCtrl.text,
-            nama: _namaCtrl.text,
-            tanggalLahir: _tglCtrl.text,
-            nomorTelepon: _telCtrl.text,
-            email: _emailCtrl.text,
+        onPressed: () async {
+          final pegawai = Pegawai(
+            id: widget.pegawai.id,
+            nip: _nipCtrl.text.trim(),
+            nama: _namaCtrl.text.trim(),
+            tanggalLahir: _tglCtrl.text.trim(),
+            nomorTelepon: _telCtrl.text.trim(),
+            email: _emailCtrl.text.trim(),
             password: _pwdCtrl.text,
           );
-          Navigator.pop(context);
-          Navigator.pushReplacement(
-            context,
-            MaterialPageRoute(builder: (c) => PegawaiDetail(pegawai: pegawai)),
-          );
+          if (pegawai.id == null) return;
+          try {
+            await DbService().updatePegawai(pegawai);
+            if (!mounted) return;
+            Navigator.pop(context, true);
+          } catch (e) {
+            if (!mounted) return;
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(content: Text("Gagal update: $e")),
+            );
+          }
         },
         child: const Text("Simpan Perubahan"),
       );

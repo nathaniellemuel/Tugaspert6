@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../model/pegawai.dart';
+import '../service/db_service.dart';
 import 'pegawai_detail.dart';
 
 class PegawaiForm extends StatefulWidget {
@@ -17,6 +18,18 @@ class _PegawaiFormState extends State<PegawaiForm> {
   final _telCtrl = TextEditingController();
   final _emailCtrl = TextEditingController();
   final _pwdCtrl = TextEditingController();
+  bool _saving = false;
+
+  @override
+  void dispose() {
+    _nipCtrl.dispose();
+    _namaCtrl.dispose();
+    _tglCtrl.dispose();
+    _telCtrl.dispose();
+    _emailCtrl.dispose();
+    _pwdCtrl.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -79,21 +92,52 @@ class _PegawaiFormState extends State<PegawaiForm> {
       );
 
   _tombolSimpan() => ElevatedButton(
-        onPressed: () {
-          Pegawai pegawai = Pegawai(
-            id: 0,
-            nip: _nipCtrl.text,
-            nama: _namaCtrl.text,
-            tanggalLahir: _tglCtrl.text,
-            nomorTelepon: _telCtrl.text,
-            email: _emailCtrl.text,
-            password: _pwdCtrl.text,
-          );
-          Navigator.pushReplacement(
-            context,
-            MaterialPageRoute(builder: (c) => PegawaiDetail(pegawai: pegawai)),
-          );
-        },
-        child: const Text("Simpan"),
+        onPressed: _saving
+            ? null
+            : () async {
+                if (_nipCtrl.text.trim().isEmpty ||
+                    _namaCtrl.text.trim().isEmpty) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(content: Text("NIP dan Nama wajib diisi")),
+                  );
+                  return;
+                }
+                setState(() => _saving = true);
+                try {
+                  final pegawai = Pegawai(
+                    nip: _nipCtrl.text.trim(),
+                    nama: _namaCtrl.text.trim(),
+                    tanggalLahir: _tglCtrl.text.trim(),
+                    nomorTelepon: _telCtrl.text.trim(),
+                    email: _emailCtrl.text.trim(),
+                    password: _pwdCtrl.text,
+                  );
+                  final id = await DbService().insertPegawai(pegawai);
+                  if (!mounted) return;
+                  Navigator.pop(context, true);
+                  Navigator.pushReplacement(
+                    context,
+                    MaterialPageRoute(
+                        builder: (c) => PegawaiDetail(
+                              pegawai: Pegawai(
+                                id: id,
+                                nip: pegawai.nip,
+                                nama: pegawai.nama,
+                                tanggalLahir: pegawai.tanggalLahir,
+                                nomorTelepon: pegawai.nomorTelepon,
+                                email: pegawai.email,
+                                password: pegawai.password,
+                              ),
+                            )),
+                  );
+                } catch (e) {
+                  if (!mounted) return;
+                  setState(() => _saving = false);
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(content: Text("Gagal simpan: $e")),
+                  );
+                }
+              },
+        child: Text(_saving ? "Menyimpan..." : "Simpan"),
       );
 }
